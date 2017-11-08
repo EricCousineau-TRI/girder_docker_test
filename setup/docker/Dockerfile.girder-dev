@@ -1,10 +1,6 @@
 FROM node:6
-MAINTAINER Kitware, Inc. <kitware@kitware.com>
 
 EXPOSE 8080
-
-RUN mkdir /girder
-RUN mkdir /girder/logs
 
 RUN apt-get update && apt-get install -qy software-properties-common python-software-properties && \
   apt-get update && apt-get install -qy \
@@ -18,17 +14,10 @@ RUN apt-get update && apt-get install -qy software-properties-common python-soft
 
 RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
 
-WORKDIR /girder
-COPY girder /girder/girder
-COPY clients /girder/clients
-COPY plugins /girder/plugins
-COPY scripts /girder/scripts
-COPY grunt_tasks /girder/grunt_tasks
-COPY Gruntfile.js /girder/Gruntfile.js
-COPY setup.py /girder/setup.py
-COPY package.json /girder/package.json
-COPY README.rst /girder/README.rst
+WORKDIR /
+RUN git clone https://github.com/girder/girder -b v2.4.0 girder
 
+WORKDIR /girder
 RUN pip install -e .[plugins]
 RUN girder-install web --all-plugins
 

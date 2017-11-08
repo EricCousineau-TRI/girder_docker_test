@@ -1,4 +1,4 @@
-FROM girder/girder
+FROM girder-dev
 
 EXPOSE 8080
 
