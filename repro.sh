@@ -16,7 +16,7 @@ echo "[ Waiting ... ]"
 sleep 2
 
 echo "[ Try login ]"
-./try_login.sh
+./try_login.py
 
 echo "[ Stopping (and removing) ]"
 docker stop ${container}

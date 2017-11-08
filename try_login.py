@@ -23,15 +23,19 @@ response = subshell([
 
 token = json.loads(response)['authToken']['token']
 
-def get(endpoint, args = []):
+def get(endpoint, args = [], mode = "GET"):
+    extra_args = []
+    if mode == "POST":
+        # https://serverfault.com/a/315852/443276
+        extra_args += ["-d", ""]
     response = subshell([
-        "curl", "-X", "GET", "-s",
+        "curl", "-X", mode, "-s",
             "--header", "Accept: application/json",
-            "--header", "Girder-Token: {}".format(token)] + args +
+            "--header", "Girder-Token: {}".format(token)] + args + extra_args +
         ["{}{}".format(api_url, endpoint)])
     return json.loads(response)
 
-api_key = get('/api_key')[0]['key']
+api_key = get('/api_key?active=true', mode = "POST")['key']
 
 def get_folder_id(collection_name):
     parent_id = get('/collection?text={}'.format(collection_name))[0]["_id"]
@@ -39,6 +43,19 @@ def get_folder_id(collection_name):
     return folder_id
 
 # Get folder ids.
-print(get_folder_id('devel'))
-print(get_folder_id('master'))
-print(get_folder_id('private'))
+devel_id = get_folder_id('devel')
+master_id = get_folder_id('master')
+private_id = get_folder_id('private')
+
+# Dump information
+import yaml
+
+info = {
+    "api_key": str(api_key),
+    "ids": {
+        "master_id": str(master_id),
+        "devel": str(devel_id),
+        "private_id": str(private_id),
+    },
+}
+print(yaml.dump(info, default_flow_style=False))
