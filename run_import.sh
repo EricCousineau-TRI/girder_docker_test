@@ -3,15 +3,17 @@ set -e -u
 
 cur_dir=$(cd $(dirname $0) && pwd)
 config_dir=${cur_dir}/config
+girder_dir=${GIRDER_DIR:-/girder}
+db_dir=/data/db
 
-cd ${GIRDER_DIR}
+cd ${girder_dir}
 
 pgrep mongod && { echo "Please close mongod"; exit 1; }
 
 # Should have a fresh database folder.
-if [[ -d /data/db/journal ]]; then
+if [[ -d ${db_dir}/journal ]]; then
     echo "Removing database"
-    rm -rf /data/db/*
+    rm -rf ${db_dir}/*
 fi
 
 # Start in the background.
