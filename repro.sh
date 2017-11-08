@@ -6,10 +6,10 @@ set -e -u
 
 cd $(cd $(dirname $0) && pwd)
 
-./setup/docker/build.sh
+./setup/docker/build.sh > /dev/null
 container=$(docker run --entrypoint bash --detach --rm -t -p 8080:8080 -v ~+:/mnt girder_mongodb)
 echo -e "container:\n${container}"
-docker exec -t ${container} /mnt/run_import.sh
+docker exec -t ${container} /mnt/run_import.sh > /dev/null
 docker exec -t ${container} bash -c "{ mongod& } && girder-server" > /dev/null &
 
 echo "[ Waiting ... ]"
