@@ -3,7 +3,7 @@
 <<EOF
 Commands executed after running girder/girder docker to have mongodb available inside.
 
-docker run --name girder_mongodb --entrypoint bash --detach -p 8080:8080 girder/girder
+docker run --name girder_mongodb --entrypoint bash --detach -t -p 8080:8080 girder/girder
 docker start girder_mongodb
 docker exec -it girder_mongodb bash
 EOF
