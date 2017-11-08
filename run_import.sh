@@ -21,7 +21,7 @@ job=$!
 python ./tests/setup_database.py ${config_dir}/mock.yml
 
 # Now kill the job.
-kill -s STOP ${job}
-# wait ${job}  # How to make this work?
+kill -s INT ${job}
+wait ${job}
 
 echo "[ Done ]"
