@@ -1,0 +1,12 @@
+FROM ubuntu:16.04
+
+WORKDIR /root
+
+COPY ./external_data_prereqs.sh .
+
+RUN apt-get update && yes "Y" \
+      | ./external_data_prereqs.sh \
+      && rm -rf /var/lib/apt/lists/* \
+      && apt-get clean all
+
+ENTRYPOINT ["bash"]

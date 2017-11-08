@@ -52,10 +52,10 @@ import yaml
 
 info = {
     "api_key": str(api_key),
-    "ids": {
-        "master_id": str(master_id),
+    "folders": {
+        "master": str(master_id),
         "devel": str(devel_id),
-        "private_id": str(private_id),
+        "private": str(private_id),
     },
 }
 print(yaml.dump(info, default_flow_style=False))

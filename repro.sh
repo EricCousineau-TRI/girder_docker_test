@@ -6,6 +6,10 @@ set -e -u
 
 cd $(cd $(dirname $0) && pwd)
 
+out_dir=${PWD}/build
+
+mkdir -p ${out_dir}
+
 ./setup/docker/build.sh > /dev/null
 container=$(docker run --entrypoint bash --detach --rm -t -p 8080:8080 -v ~+:/mnt girder_mongodb)
 echo -e "container:\n${container}"
@@ -16,7 +20,10 @@ echo "[ Waiting ... ]"
 sleep 2
 
 echo "[ Try login ]"
-./try_login.py
+./try_login.py | tee ${out_dir}/info.yaml
+
+echo "[ Configure ]"
+
 
 echo "[ Stopping (and removing) ]"
 docker stop ${container}
