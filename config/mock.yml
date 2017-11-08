@@ -13,21 +13,19 @@ collections:
     public: true
     creator: 'admin'
     folders:
-      - name: 'files'
-        public: true
-        creator: 'admin'
-        import: 'files/master/files'
+      - name: files
+        import: '../files/master'
 
   - name: 'devel'
     public: true
     creator: 'admin'
     folders:
-      - name: 'files'
-        import: 'files/devel/files'
+      - name: files
+        import: '../files/devel'
 
   - name: 'private'
     public: false
     creator: 'admin'
     folders:
-      - name: 'files'
-        import: 'files/private/files'
+      - name: files
+        import: '../files/private'
