@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import json
 from base64 import b64encode
 import subprocess
@@ -12,7 +13,7 @@ def subshell(cmd, strip=True):
         return output
 
 auth = b64encode("admin:password")
-url = "http://localhost:8080"
+url = sys.argv[1]
 api_url = url + "/api/v1"
 
 response = subshell([
@@ -51,6 +52,7 @@ private_id = get_folder_id('private')
 import yaml
 
 info = {
+    "url": url,
     "api_key": str(api_key),
     "folders": {
         "master": str(master_id),

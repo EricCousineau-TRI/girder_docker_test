@@ -5,6 +5,8 @@ cd $(dirname $0)
 docker build -t girder-dev -f ./Dockerfile.girder-dev .
 docker build -t girder_mongodb -f ./Dockerfile .
 
+docker build -t external_data_test -f ./Dockerfile.external_data .
+
 cat <<EOF
 
 For running:
