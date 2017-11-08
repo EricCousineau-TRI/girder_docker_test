@@ -1,0 +1,25 @@
+# @see http://girder.readthedocs.io/en/latest/development.html#initializing-the-database-for-a-test
+
+users:
+  - login: 'admin'
+    password: 'password'
+    firstName: 'First'
+    lastName: 'Last'
+    email: 'admin@email.com'
+    admin: true
+
+collections:
+  - name: 'master_collection'
+    public: true
+    creator: 'admin'
+    import: 'files/master'
+
+  - name: 'devel_collection'
+    public: true
+    creator: 'admin'
+    import: 'files/devel'
+
+  - name: 'private_collection'
+    public: false
+    creator: 'admin'
+    import: 'files/private'
