@@ -12,14 +12,22 @@ collections:
   - name: 'master'
     public: true
     creator: 'admin'
-    import: 'files/master'
+    folders:
+      - name: 'files'
+        public: true
+        creator: 'admin'
+        import: 'files/master/files'
 
   - name: 'devel'
     public: true
     creator: 'admin'
-    import: 'files/devel'
+    folders:
+      - name: 'files'
+        import: 'files/devel/files'
 
   - name: 'private'
     public: false
     creator: 'admin'
-    import: 'files/private'
+    folders:
+      - name: 'files'
+        import: 'files/private/files'
