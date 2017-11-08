@@ -9,17 +9,17 @@ users:
     admin: true
 
 collections:
-  - name: 'master_collection'
+  - name: 'master'
     public: true
     creator: 'admin'
     import: 'files/master'
 
-  - name: 'devel_collection'
+  - name: 'devel'
     public: true
     creator: 'admin'
     import: 'files/devel'
 
-  - name: 'private_collection'
+  - name: 'private'
     public: false
     creator: 'admin'
     import: 'files/private'
