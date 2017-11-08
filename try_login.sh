@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e -u
 
-auth=$(echo admin:password | base64)
+auth=$(echo -n admin:password | base64)
 
 url=http://localhost:8080
 
