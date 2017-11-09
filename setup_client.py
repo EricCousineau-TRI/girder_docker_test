@@ -6,6 +6,7 @@ from base64 import b64encode
 import subprocess
 import time
 from urllib import urlencode
+import yaml
 
 def subshell(cmd, strip=True):
     output = subprocess.check_output(cmd, shell=isinstance(cmd, str))
@@ -15,8 +16,8 @@ def subshell(cmd, strip=True):
         return output
 
 auth = b64encode("admin:password")
-url = sys.argv[1]
-out_file = sys.argv[2]
+url, info_file, config_file, user_file = sys.argv[1:5]
+info_file = sys.argv[2]
 api_url = url + "/api/v1"
 
 response = subshell([
@@ -57,9 +58,6 @@ devel_id = get_folder_id('devel')
 master_id = get_folder_id('master')
 private_id = get_folder_id('private')
 
-# Dump information
-import yaml
-
 info = {
     "url": url,
     "api_key": str(api_key),
@@ -71,10 +69,38 @@ info = {
 }
 txt = yaml.dump(info, default_flow_style=False)
 print(txt)
-with open(out_file, 'w') as f:
+with open(info_file, 'w') as f:
     f.write(txt)
-print("Wrote: {}".format(out_file))
+print("Wrote: {}".format(info_file))
 
+# Merge configuration.
+config = yaml.load(open(config_file))
+
+# Write updated config
+remotes = config["remotes"]
+remotes["master"]["folder_id"] = info["folders"]["master"]
+remotes["master"]["url"] = url
+remotes["devel"]["folder_id"] = info["folders"]["devel"]
+remotes["devel"]["url"] = url
+remotes["devel"]["overlay"] = "master"
+config["remote"] = "devel"
+with open(config_file, 'w') as f:
+    yaml.dump(config, f, default_flow_style=False)
+
+# Generate the user config.
+user_config = {
+    "girder": {
+        "url": {
+            url: {
+                "api_key": info["api_key"]
+            },
+        },
+    },
+}
+with open(user_file, 'w') as f:
+    yaml.dump(user_config, f, default_flow_style=False)
+
+# Check plugins on the server.
 plugins = action("/system/plugins")
 my_plugin = "hashsum_download"
 if my_plugin not in plugins["all"]:
