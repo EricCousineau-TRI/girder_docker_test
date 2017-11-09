@@ -9,4 +9,8 @@ RUN apt-get update && yes "Y" \
       && rm -rf /var/lib/apt/lists/* \
       && apt-get clean all
 
+RUN wget https://bootstrap.pypa.io/get-pip.py && \
+    python get-pip.py && \
+    pip install girder-client
+
 ENTRYPOINT ["bash"]

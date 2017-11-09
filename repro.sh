@@ -50,7 +50,7 @@ url="http://${ip_addr}:8080"
 
 echo "[ Try login ]"
 sleep 2
-./try_login.py "${url}" | tee ${out_dir}/info.yaml
+./try_login.py "${url}" ${out_dir}/info.yaml
 
 echo "[ Generate config stuff ]"
 

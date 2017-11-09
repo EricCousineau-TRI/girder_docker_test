@@ -4,6 +4,8 @@ import sys
 import json
 from base64 import b64encode
 import subprocess
+import time
+from urllib import urlencode
 
 def subshell(cmd, strip=True):
     output = subprocess.check_output(cmd, shell=isinstance(cmd, str))
@@ -14,6 +16,7 @@ def subshell(cmd, strip=True):
 
 auth = b64encode("admin:password")
 url = sys.argv[1]
+out_file = sys.argv[2]
 api_url = url + "/api/v1"
 
 response = subshell([
@@ -24,23 +27,29 @@ response = subshell([
 
 token = json.loads(response)['authToken']['token']
 
-def get(endpoint, args = [], mode = "GET"):
+def action(endpoint, args = [], method = "GET"):
     extra_args = []
-    if mode == "POST":
+    if method != "GET":
         # https://serverfault.com/a/315852/443276
         extra_args += ["-d", ""]
-    response = subshell([
-        "curl", "-X", mode, "-s",
+    response_full = subshell([
+        "curl", "-X", method, "-s",
+            "--write-out", "\n%{http_code}",
             "--header", "Accept: application/json",
             "--header", "Girder-Token: {}".format(token)] + args + extra_args +
         ["{}{}".format(api_url, endpoint)])
+    lines = response_full.splitlines()
+    response = "\n".join(lines[0:-1])
+    code = int(lines[-1])
+    if code >= 400:
+        raise RuntimeError("Bad response for: {}\n  {}".format(endpoint, response))
     return json.loads(response)
 
-api_key = get('/api_key?active=true', mode = "POST")['key']
+api_key = action('/api_key?active=true', method = "POST")['key']
 
 def get_folder_id(collection_name):
-    parent_id = get('/collection?text={}'.format(collection_name))[0]["_id"]
-    folder_id = get('/folder?parentType=collection&parentId={}'.format(parent_id))[0]["_id"]
+    parent_id = action('/collection?text={}'.format(collection_name))[0]["_id"]
+    folder_id = action('/folder?parentType=collection&parentId={}'.format(parent_id))[0]["_id"]
     return folder_id
 
 # Get folder ids.
@@ -60,4 +69,25 @@ info = {
         "private": str(private_id),
     },
 }
-print(yaml.dump(info, default_flow_style=False))
+txt = yaml.dump(info, default_flow_style=False)
+print(txt)
+with open(out_file, 'w') as f:
+    f.write(txt)
+print("Wrote: {}".format(out_file))
+
+plugins = action("/system/plugins")
+my_plugin = "hashsum_download"
+if my_plugin not in plugins["all"]:
+    raise RuntimeError("Plugin must be installed: {}".format(my_plugin))
+enabled = plugins["enabled"]
+if my_plugin not in enabled:
+    enabled.append(my_plugin)
+    qs = urlencode({"plugins": json.dumps(enabled)})
+    print("Enable: {}".format(enabled))
+    response = action("/system/plugins?{}".format(qs), method = "PUT")
+    print("Rebuilding...")
+    action("/system/web_build", method = "POST")
+    print("Restarting...")
+    action("/system/restart", method = "PUT")
+    time.sleep(1)
+    print("[ Done ]")
