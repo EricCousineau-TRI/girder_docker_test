@@ -1,16 +1,13 @@
 #!/bin/bash
 set -e -u
 
-# Unable to get the same results as instructions:
-# http://girder.readthedocs.io/en/latest/developer-cookbook.html#authenticating-to-the-web-api
-
 cd $(cd $(dirname $0) && pwd)
 
 out_dir=${PWD}/build
 
 mkdir -p ${out_dir}
 
-./setup/docker/build.sh # > /dev/null
+./setup/docker/build.sh > /dev/null
 
 echo "[ Configure ]"
 
@@ -21,10 +18,10 @@ cp -r ../${repo_name} ${out_dir}/
 
 (
     cd ${repo_dir}
-    git clean -fxd
+    git clean -fxd > /dev/null
 )
 
-
+# Download data files.
 (
     cd ${out_dir}
     [[ -f small_dragon.obj ]] || \
@@ -34,12 +31,13 @@ cp -r ../${repo_name} ${out_dir}/
 )
 
 config_file=${repo_dir}/.external_data.yml
+out_file=${out_dir}/info.yaml
 user_file=${out_dir}/external_data.user.yml
 
-
+# Initialize server.
 server=$(docker run --entrypoint bash --detach --rm -t -p 8080:8080 -v ~+:/mnt girder_mongodb)
 echo -e "server:\n${server}"
-docker exec -t ${server} /mnt/run_import.sh > /dev/null
+docker exec -t ${server} /mnt/setup_server.sh > /dev/null
 docker exec -t ${server} bash -c "{ mongod& } && girder-server" > /dev/null &
 
 # https://stackoverflow.com/a/20686101/7829525
@@ -50,14 +48,14 @@ url="http://${ip_addr}:8080"
 
 echo "[ Try login ]"
 sleep 2
-./try_login.py "${url}" ${out_dir}/info.yaml
+./setup_client.py "${url}" ${out_file}
 
 echo "[ Generate config stuff ]"
 
 python - <<EOF
 import yaml
 
-info_file = "${out_dir}/info.yaml"
+info_file = "${out_file}"
 config_file = "${config_file}"
 user_file = "${user_file}"
 
@@ -96,10 +94,8 @@ print("Done")
 EOF
 
 client=$(docker run --detach --rm -t -v ~+:/mnt external_data_test)
-docker exec -t ${client} /mnt/run_workflow.sh
+docker exec -t ${client} /mnt/test_client.sh
 
-exit 1
-
-echo "[ Stopping (and removing) ]"
-docker stop ${server}
-docker stop ${client}
+# echo "[ Stopping (and removing) ]"
+# docker stop ${server}
+# docker stop ${client}

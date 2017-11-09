@@ -1,3 +1,4 @@
+# Adapted from girder/girder.
 FROM node:6
 
 EXPOSE 8080
