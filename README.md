@@ -1,0 +1,1 @@
+This has been superseded by: [external_data_bazel/test/test_backends/girder](https://github.com/EricCousineau-TRI/external_data_bazel/tree/6a8be0c70402792f6126cacb816cd648084a6f10/test/test_backends/girder)
