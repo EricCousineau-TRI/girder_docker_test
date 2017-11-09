@@ -30,7 +30,7 @@ echo "[ Docker Setup ]"
 ./setup/docker/build.sh #> /dev/null
 
 echo "[ Server Setup (on Server) ]"
-server=$(docker run --entrypoint bash --detach --rm -t -p 8080:8080 -v ~+:/mnt girder_mongodb)
+server=$(docker run --entrypoint bash --detach --rm -t -p 8080:8080 -v ~+:/mnt external_data_server)
 echo -e "server:\n${server}"
 docker exec -t ${server} /mnt/setup_server.sh > /dev/null
 docker exec -t ${server} bash -c "{ mongod& } && girder-server" > /dev/null &
@@ -51,7 +51,7 @@ user_file=${out_dir}/external_data.user.yml
 ./setup_client.py ${url} ${info_file} ${config_file} ${user_file}
 
 echo "[ Run Tests (on Client) ]"
-client=$(docker run --detach --rm -t -v ~+:/mnt external_data_test)
+client=$(docker run --detach --rm -t -v ~+:/mnt external_data_client)
 docker exec -t ${client} /mnt/test_client.sh
 
 echo "[ Stopping (and removing) ]"
