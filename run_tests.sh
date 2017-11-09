@@ -1,20 +1,19 @@
 #!/bin/bash
 set -e -u
 
-cd $(cd $(dirname $0) && pwd)
+cur_dir=$(cd $(dirname $0) && pwd)
+cd ${cur_dir}
 
-echo "[ Configure ]"
-out_dir=${PWD}/build
+echo "[ Get Basic Code ]"
+out_dir=${cur_dir}/build
 mkdir -p ${out_dir}
 
 repo_name=bazel-large-files-with-girder
 repo_dir=${out_dir}/${repo_name}
 rm -rf ${repo_dir}
-cp -r ../${repo_name} ${out_dir}/
-
 (
-    cd ${repo_dir}
-    git clean -fxd > /dev/null
+    cd ${out_dir}
+    git clone https://github.com/EricCousineau-TRI/bazel-large-files-with-girder.git -b feature/external_data
 )
 
 # Download data files.
@@ -30,7 +29,7 @@ echo "[ Docker Setup ]"
 ./setup/docker/build.sh #> /dev/null
 
 echo "[ Server Setup (on Server) ]"
-server=$(docker run --entrypoint bash --detach --rm -t -p 8080:8080 -v ~+:/mnt external_data_server)
+server=$(docker run --entrypoint bash --detach --rm -t -p 8080:8080 -v ${cur_dir}:/mnt external_data_server)
 echo -e "server:\n${server}"
 docker exec -t ${server} /mnt/setup_server.sh > /dev/null
 docker exec -t ${server} bash -c "{ mongod& } && girder-server" > /dev/null &
@@ -44,14 +43,17 @@ url="http://${ip_addr}:8080"
 # Wait for server to initialize.
 sleep 2
 
-echo "[ Client Setup (on Host) ]"
+echo "[ Client Setup (on Client) ]"
+client=$(docker run --detach --rm -t -v ${cur_dir}:/mnt external_data_client)
+echo -e "client:\n${client}"
+
 info_file=${out_dir}/info.yaml
 config_file=${repo_dir}/.external_data.yml
 user_file=${out_dir}/external_data.user.yml
-./setup_client.py ${url} ${info_file} ${config_file} ${user_file}
+args="${url} ${info_file} ${config_file} ${user_file}"
+docker exec -t ${client} /mnt/setup_client.py $(echo ${args} | sed "s#${cur_dir}#/mnt#g")
 
 echo "[ Run Tests (on Client) ]"
-client=$(docker run --detach --rm -t -v ~+:/mnt external_data_client)
 docker exec -t ${client} /mnt/test_client.sh
 
 echo "[ Stopping (and removing) ]"
